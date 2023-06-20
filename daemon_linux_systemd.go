@@ -15,6 +15,7 @@ import (
 // systemDRecord - standard record (struct) for linux systemD version of daemon package
 type systemDRecord struct {
 	name         string
+	user.        string
 	description  string
 	kind         Kind
 	dependencies []string
@@ -77,7 +78,12 @@ func (linux *systemDRecord) Install(args ...string) (string, error) {
 		return installAction + failed, err
 	}
 
-	templ, err := template.New("systemDConfig").Parse(systemDConfig)
+	useTmpl := systemDConfig
+	if linux.user != "" {
+		useTmpl = systemDConfigNonRoot
+	}
+
+	templ, err := template.New("systemDConfig").Parse(useTmpl)
 	if err != nil {
 		return installAction + failed, err
 	}
@@ -85,9 +91,10 @@ func (linux *systemDRecord) Install(args ...string) (string, error) {
 	if err := templ.Execute(
 		file,
 		&struct {
-			Name, Description, Dependencies, Path, Args string
+			Name, User, Description, Dependencies, Path, Args string
 		}{
 			linux.name,
+			linux.user,
 			linux.description,
 			strings.Join(linux.dependencies, " "),
 			execPatch,
@@ -211,6 +218,15 @@ func (linux *systemDRecord) SetTemplate(tplStr string) error {
 	return nil
 }
 
+func (linux *systemDRecord) GetNonRootTemplate() string {
+	return systemDConfigNonRoot
+}
+
+func (linux *systemDRecord) SetNontRootTemplate(tplStr string) error {
+	systemDConfigNonRoot = tplStr
+	return nil
+}
+
 var systemDConfig = `[Unit]
 Description={{.Description}}
 Requires={{.Dependencies}}
@@ -219,6 +235,20 @@ After={{.Dependencies}}
 [Service]
 PIDFile=/var/run/{{.Name}}.pid
 ExecStartPre=/bin/rm -f /var/run/{{.Name}}.pid
+ExecStart={{.Path}} {{.Args}}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+`
+
+var systemDConfigNonRoot = `[Unit]
+Description={{.Description}}
+Requires={{.Dependencies}}
+After={{.Dependencies}}
+
+[Service]
+User={{.User}}
 ExecStart={{.Path}} {{.Args}}
 Restart=on-failure
 
