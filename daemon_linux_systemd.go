@@ -15,7 +15,7 @@ import (
 // systemDRecord - standard record (struct) for linux systemD version of daemon package
 type systemDRecord struct {
 	name         string
-	user.        string
+	user         string
 	description  string
 	kind         Kind
 	dependencies []string
