@@ -5,6 +5,7 @@
 package daemon
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"regexp"
@@ -217,6 +218,14 @@ func (linux *systemVRecord) GetTemplate() string {
 func (linux *systemVRecord) SetTemplate(tplStr string) error {
 	systemVConfig = tplStr
 	return nil
+}
+
+func (linux *systemVRecord) GetNonRootTemplate() string {
+	return ""
+}
+
+func (linux *systemVRecord) SetNontRootTemplate(tplStr string) error {
+	return fmt.Errorf("not implemented")
 }
 
 var systemVConfig = `#! /bin/sh

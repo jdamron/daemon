@@ -5,6 +5,7 @@
 package daemon
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"regexp"
