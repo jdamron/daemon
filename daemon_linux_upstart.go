@@ -197,6 +197,14 @@ func (linux *upstartRecord) SetTemplate(tplStr string) error {
 	return nil
 }
 
+func (linux *upstartRecord) GetNonRootTemplate() string {
+	return ""
+}
+
+func (linux *upstartRecord) SetNontRootTemplate(tplStr string) error {
+	return fmt.Errorf("not implemented")
+}
+
 var upstatConfig = `# {{.Name}} {{.Description}}
 
 description     "{{.Description}}"
